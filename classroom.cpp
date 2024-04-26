@@ -222,7 +222,7 @@ int Classroom :: find_teacher(string name)
     int i;
     for(i = 0; i < teacher.size(); i++)
     {
-        if(teacher[i].get_name() == name)
+        if(teacher[i].name == name)
         {
             flag = true;
             break;
