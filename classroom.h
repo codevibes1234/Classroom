@@ -21,7 +21,6 @@ class Teacher
     void subtract_marks(Classroom& classroom, string course);
     void add_course(Classroom& classroom);
     void drop_course(Classroom& classroom);
-    string get_name() {return name;}
     int find_course(string course);
     //Assuming that the marks range from 0 to 100.
 };
