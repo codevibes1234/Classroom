@@ -2,18 +2,11 @@
 #include<string>
 #include<vector>
 #include<map>
+#include<utility>
 #include"classroom.h"
 using namespace std;
 
-bool Student :: search_course(string course)
-{
-    if(Marks.count(course) == 0)
-    return false;
-    else
-    return true;
-}
-
-Teacher :: Teacher(string nam)
+Teacher :: Teacher(Classroom classroom, string nam)
 {
     name = nam;
     cout << "Enter the number of courses that the teacher teaches\n";
@@ -26,6 +19,9 @@ Teacher :: Teacher(string nam)
         cin >> temp;
         Course.push_back(temp);
     }
+    for(int i = 0; i < Course.size(); i++)
+    for(int j = 0; j < (classroom.student).size(); j++)
+    marks_register[Course[i]].push_back(make_pair(((classroom.student)[j]).roll_number,0));
     cout << "Teacher added successfully\n";
 }
 
@@ -47,7 +43,7 @@ int Teacher :: find_course(string course)
     return i;
 }
 
-void Teacher :: add_marks(Classroom& classroom, string course)
+void Teacher :: add_marks(Classroom classroom, string course)
 {
     int index = this -> find_course(course);
     if(index == -1)
@@ -67,12 +63,12 @@ void Teacher :: add_marks(Classroom& classroom, string course)
     cout << "Enter the number of marks that you want to add\n";
     int value;
     cin >> value;
-    if((classroom.student[index]).Marks[course] + value > 100)
+    if(((marks_register[course])[index]).second + value > 100)
     {
         cout << "You cant add these marks since the total marks become more than 100 after adding this\n";
         return;
     }
-    (classroom.student[index]).Marks[course] += value;
+    ((marks_register[course])[index]).second += value;
     cout << "Marks added successfully\n";
 }
 
@@ -96,12 +92,12 @@ void Teacher :: subtract_marks(Classroom& classroom, string course)
     cout << "Enter the number of marks that you want to subtract\n";
     int value;
     cin >> value;
-    if((classroom.student[index]).Marks[course] - value < 0)
+    if(((marks_register[course])[index]).second - value < 0)
     {
         cout << "You cant subtract these marks since the total marks become negative after subtracting this\n";
         return;
     }
-    (classroom.student[index]).Marks[course] -= value;
+    ((marks_register[course])[index]).second -= value;
     cout << "Marks subtracted successfully\n";
 }
 
@@ -122,7 +118,7 @@ void Teacher :: add_course(Classroom& classroom)
     {
         Course.push_back(course);
         for(i = 0; i < (classroom.student).size(); i++)
-        ((classroom.student)[i]).Marks.insert({course,0});
+        marks_register[course].push_back(make_pair(((classroom.student)[i]).roll_number,0));
         cout << "Course added successfully\n";
     }
     else
@@ -142,11 +138,10 @@ void Teacher :: drop_course(Classroom& classroom)
     int index = this->find_course(course);
     if(index == -1)
     {
-        cout << "You don't take this course\n";
+        cout << "You don't teach this course\n";
         return;
     }
-    for(int i = 0; i <(classroom.student).size(); i++)
-    ((classroom.student)[i]).Marks.erase(course);
+    marks_register.erase(Course[index]);
     auto itr = Course.begin()+index;
     Course.erase(itr);
     cout << "Course dropped successfully\n"; 
@@ -170,6 +165,21 @@ int Classroom :: find_student(string roll)
     return i;
 }
 
+int Classroom :: search_course(string course)
+{
+    int ret = -1;
+    for(int i = 0; i < teacher.size(); i++)
+    for(int j = 0; j < (teacher[i].Course).size(); j++)
+    if(course == (teacher[i].Course)[j])
+    ret = i;
+    return ret;
+}
+
+int Classroom :: get_marks(string course, int index, int index1)
+{
+    return (((teacher[index1]).marks_register)[course])[index].second;
+}
+
 void Classroom :: admit_student(string roll)
 {
     int index = this->find_student(roll);
@@ -180,8 +190,8 @@ void Classroom :: admit_student(string roll)
     }
     Student s(roll);
     for(int i = 0; i < teacher.size(); i++)
-    for(int j = 0; j < teacher[i].get_num_courses(); j++)
-    (s.Marks).insert({teacher[i].get_course(j),0});
+    for(auto j = (teacher[i].marks_register).begin(); j != (teacher[i].marks_register).end(); j++)
+    (j->second).push_back(make_pair(roll,0));
     student.push_back(s);
 }
 
@@ -192,6 +202,14 @@ void Classroom :: remove_student(string roll)
     {
         cout << "There is no student with this roll number\n";
         return;
+    }
+    for(int i = 0; i < teacher.size(); i++)
+    {
+        for(auto j = (teacher[i].marks_register).begin(); j != (teacher[i].marks_register).end(); j++)
+        {
+            auto itr = (j -> second).begin()+index;
+            (j -> second).erase(itr);
+        }
     }
     auto itr = student.begin()+index;
     student.erase(itr);
@@ -224,11 +242,8 @@ void Classroom :: add_teacher(string name)
         cout << "There is already a teacher with this name\n";
         return ;
     }
-    Teacher t(name);
+    Teacher t(*this,name);
     teacher.push_back(t);
-    for(int i = 0; i < student.size(); i++)
-    for(int j = 0; j < t.get_num_courses(); j++)
-    (student[i].Marks).insert({t.get_course(j),0});
 }
 
 void Classroom :: remove_teacher(string name)
@@ -239,9 +254,6 @@ void Classroom :: remove_teacher(string name)
         cout << "There is no teacher with this name\n";
         return;
     }
-    for(int i = 0; i < student.size(); i++)
-    for(int j = 0; j < teacher[index].get_num_courses(); j++)
-    (student[i].Marks).erase(teacher[index].get_course(j));
     auto itr = teacher.begin()+index;
     teacher.erase(itr);
     cout << "Teacher removed successfully\n";

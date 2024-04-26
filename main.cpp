@@ -23,8 +23,7 @@ int main()
              << "Press 10 to exit\n";
         cin >> key;
         string roll_number,name,course;
-        int index;
-        bool enrolled;
+        int index,index1;
         switch(key)
         {
             case 1: cout << "Enter the roll number of the student\n";
@@ -42,7 +41,7 @@ int main()
                     cout << "You are not a teacher in this class\n";
                     else
                     {
-                        Teacher t = classroom.get_teacher(index);
+                        Teacher& t = classroom.get_teacher(index);
                         cout << "Enter the course in which you want to add marks\n";
                         cin >> course;
                         t.add_marks(classroom,course);
@@ -93,11 +92,11 @@ int main()
                         Student s = classroom.get_student(index);
                         cout << "Enter the course in which you want to see your marks\n";
                         cin >> course;
-                        enrolled = s.search_course(course);
-                        if(!enrolled)
+                        index1 = classroom.search_course(course);
+                        if(index1 == -1)
                         cout << "you are not enrolled in this course\n";
                         else
-                        cout << "Your marks are " << s.get_marks(course) << "\n";
+                        cout << "Your marks are " << classroom.get_marks(course,index,index1) << "\n";
                     }
                     break;
             case 8: cout << "Enter the roll number of the student whom you want to remove\n";
